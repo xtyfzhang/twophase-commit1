@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: two-phase-commit-client
+server:
+  port: 8032
