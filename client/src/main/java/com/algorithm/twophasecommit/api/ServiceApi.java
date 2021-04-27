@@ -16,13 +16,13 @@ public interface ServiceApi {
      * @return
      */
     @GetMapping("/getTransactionId")
-    public Long  getTransactionId(int serviceNum);
+    public Long  getTransactionId(@RequestParam("serviceNum") int serviceNum);
 
     /**
      * 注册事务服务
      * @return 事务ID
      */
     @GetMapping("/registerTransactionService")
-    public Long registerTransactionService(@RequestParam Long id);
+    public Long registerTransactionService(@RequestParam("id") Long id);
 
 }

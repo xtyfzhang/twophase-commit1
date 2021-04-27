@@ -8,13 +8,15 @@ import lombok.Data;
 @Data
 public class TransactionRegister {
 
-    /**
+   /* *//**
      * 服务ID
-     */
+     *//*
     private String ip;
 
-    /**
+    *//**
      * 服务端口
-     */
-    private String port;
+     *//*
+    private String port;*/
+
+    private String addr;
 }

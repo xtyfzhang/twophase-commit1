@@ -8,6 +8,7 @@ import com.algorithm.twophasecommit.snowflow.SnowflakeIdWorker;
 import com.algorithm.twophasecommit.utils.FeignUtils;
 import com.algorithm.twophasecommit.utils.IpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +18,13 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 提供默认实现事务处理信息
  */
-public abstract class AbstractTransactionProcessing implements TransactionProcessing{
+public abstract class AbstractTransactionProcessing {
 
     @Autowired
     private  SnowflakeIdWorker snowflakeIdWorker;
+
+    @Autowired
+    private ClientApi clientApi;
 
     /**
      * 注册信息
@@ -46,14 +50,6 @@ public abstract class AbstractTransactionProcessing implements TransactionProces
         // 查询是否存在执行中的事务
         if (!inActionTransaction()) {
             long transactionid  = snowflakeIdWorker.nextId();
-            TransactionRegister transactionRegister = new TransactionRegister();
-            transactionRegister.setIp(IpUtils.getIp());
-            transactionRegister.setPort(IpUtils.getLocalPort());
-          //  transactionRegister.setServiceName(serviceName);
-
-            List<TransactionRegister> transactionRegisters = map.getOrDefault(transactionid,new ArrayList<>());
-            transactionRegisters.add(transactionRegister);
-            map.put(transactionid,transactionRegisters);
             this.serviceNum = serviceNum;
             return transactionid;
         }
@@ -64,11 +60,10 @@ public abstract class AbstractTransactionProcessing implements TransactionProces
      * 注册事务信息
      * @return -1 存在执行中的事务，需要等待;
      */
-    public void registerTransactionService(Long id) {
+    public void registerTransactionService(Long id,String serverAddr) {
 
         TransactionRegister transactionRegister = new TransactionRegister();
-        transactionRegister.setIp(IpUtils.getIp());
-        transactionRegister.setPort(IpUtils.getLocalPort());
+        transactionRegister.setAddr(serverAddr);
         List<TransactionRegister> transactionRegisters = map.getOrDefault(id,new ArrayList<>());
         transactionRegisters.add(transactionRegister);
         map.put(id,transactionRegisters);
@@ -83,7 +78,7 @@ public abstract class AbstractTransactionProcessing implements TransactionProces
      */
     private boolean inActionTransaction(){
 
-        if (transactionInstance.getTransactionStatus() == TransactionStatus.END) {
+        if (transactionInstance.getTransactionStatus() == null || transactionInstance.getTransactionStatus() == TransactionStatus.END) {
             return false;
         }
         return true;
@@ -107,7 +102,6 @@ public abstract class AbstractTransactionProcessing implements TransactionProces
         int fail = 0;
         List<TransactionRegister> transactionInstances = map.get(id);
         for (TransactionRegister transactionRegister : transactionInstances) {
-            ClientApi clientApi = FeignUtils.createFeignService(transactionRegister.getIp(),transactionRegister.getPort());
             int askResult = clientApi.askResult(id);
             if (askResult == -1) {
                 fail += 1;
@@ -119,14 +113,12 @@ public abstract class AbstractTransactionProcessing implements TransactionProces
         // 回滚事务
         if (fail > 1) {
             for (TransactionRegister transactionRegister : transactionInstances) {
-                ClientApi clientApi = FeignUtils.createFeignService(transactionRegister.getIp(),transactionRegister.getPort());
                  clientApi.transactionRollBack(id);
             }
         }
         // 提交事务
         if (fail == 0 && success == transactionInstances.size()) {
             for (TransactionRegister transactionRegister : transactionInstances) {
-                ClientApi clientApi = FeignUtils.createFeignService(transactionRegister.getIp(),transactionRegister.getPort());
                 clientApi.transactionCommit(id);
             }
         }

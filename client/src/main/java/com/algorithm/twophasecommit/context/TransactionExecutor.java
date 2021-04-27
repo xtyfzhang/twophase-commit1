@@ -47,7 +47,7 @@ public class TransactionExecutor extends Thread{
         } catch (Throwable throwable) {
             // 执行失败，进行回滚事务
             success = false;
-            throwable.printStackTrace();
+         //   throwable.printStackTrace();
         }
     }
 

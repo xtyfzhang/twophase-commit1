@@ -1,6 +1,7 @@
 package com.algorithm.twophasecommit.aop;
 
 import com.algorithm.twophasecommit.api.ServiceApi;
+import com.algorithm.twophasecommit.constant.Constants;
 import com.algorithm.twophasecommit.context.TPCTransactioContextAware;
 import com.algorithm.twophasecommit.context.TransactionExecutor;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -8,10 +9,12 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.locks.LockSupport;
 
 
@@ -41,10 +44,25 @@ public class TwoTCAOP {
     @Around("twoTc()")
     public Object around(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
 
+        // 获取事务管理器
         PlatformTransactionManager tm = tpcTransactioContextAware.getDefaultTransactionManager();
         tpcTransactioContextAware.setTransactionManager(tm);
-        // 获取事务ID
-        long traId = serviceApi.getTransactionId(0);
+        // 获取事务ID信息
+        Long traId = null;
+        ServletRequestAttributes attrs = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = attrs.getRequest();
+        String trId = request.getHeader(Constants.TPC_TRANSACTION_ID);
+        if (trId == null || trId == "") {
+            traId = serviceApi.getTransactionId(1);
+        } else {
+            traId = Long.valueOf(trId);
+        }
+        // 存在有效事务未提交，则等待一段时间重新提交
+        while (traId == -1){
+            // 等待一段时间之后自动获取事务ID信息
+            Thread.sleep(100);
+            traId = serviceApi.getTransactionId(0);
+        }
         // 注册服务
         serviceApi.registerTransactionService(traId);
         // 保存事务ID信息

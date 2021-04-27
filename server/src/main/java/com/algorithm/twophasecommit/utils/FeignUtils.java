@@ -8,13 +8,13 @@ import feign.Feign;
  */
 public class FeignUtils {
 
-    public static ClientApi createFeignService(String url, String port){
+    public static ClientApi createFeignService(String serverAddr){
 
         return Feign.builder()
 
               //  .decoder(new GsonDecoder())
 
-                .target(ClientApi.class, "https://api.github.com");
+                .target(ClientApi.class, "http://"+serverAddr+"/");
     }
 
 }

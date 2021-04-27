@@ -3,6 +3,7 @@ package com.algorithm.twophasecommit.controller;
 import com.algorithm.twophasecommit.TransactionProcessingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,8 +34,8 @@ public class TransactionProcessingController{
      * @return
      */
     @GetMapping("/registerTransactionService")
-    public void registerTransactionService(Long id) {
-        transactionProcessingService.registerTransactionService(id);
+    public void registerTransactionService(Long id, @RequestHeader("SERVER_ADDR") String serverAddr) {
+        transactionProcessingService.registerTransactionService(id,serverAddr);
     }
 
 }
