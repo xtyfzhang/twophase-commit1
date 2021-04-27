@@ -4,6 +4,7 @@ import com.algorithm.twophasecommit.api.ServiceApi;
 import com.algorithm.twophasecommit.constant.Constants;
 import com.algorithm.twophasecommit.context.TPCTransactioContextAware;
 import com.algorithm.twophasecommit.context.TransactionExecutor;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

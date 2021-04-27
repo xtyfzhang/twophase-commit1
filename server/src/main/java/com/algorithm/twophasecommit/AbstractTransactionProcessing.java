@@ -5,10 +5,7 @@ import com.algorithm.twophasecommit.enums.TransactionStatus;
 import com.algorithm.twophasecommit.pojo.TransactionInstance;
 import com.algorithm.twophasecommit.pojo.TransactionRegister;
 import com.algorithm.twophasecommit.snowflow.SnowflakeIdWorker;
-import com.algorithm.twophasecommit.utils.FeignUtils;
-import com.algorithm.twophasecommit.utils.IpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +19,6 @@ public abstract class AbstractTransactionProcessing {
 
     @Autowired
     private  SnowflakeIdWorker snowflakeIdWorker;
-
-    @Autowired
-    private ClientApi clientApi;
 
     /**
      * 注册信息
@@ -68,7 +62,9 @@ public abstract class AbstractTransactionProcessing {
         transactionRegisters.add(transactionRegister);
         map.put(id,transactionRegisters);
         if (transactionRegisters.size() == serviceNum) {
-            this.TransactionProcessing(id);
+            // 执行事务处理
+            AsynTransactionExecute asynTransactionExecute = new AsynTransactionExecute(map,transactionInstance,id);
+            asynTransactionExecute.start();
         }
     }
 
@@ -92,36 +88,4 @@ public abstract class AbstractTransactionProcessing {
         this.transactionInstance = transactionInstance;
     }
 
-    /**
-     * 事务处理方法
-     * @param id
-     */
-    public void TransactionProcessing(Long id){
-
-        int success = 0;
-        int fail = 0;
-        List<TransactionRegister> transactionInstances = map.get(id);
-        for (TransactionRegister transactionRegister : transactionInstances) {
-            int askResult = clientApi.askResult(id);
-            if (askResult == -1) {
-                fail += 1;
-            }
-            if (askResult == 1) {
-                success += 1;
-            }
-        }
-        // 回滚事务
-        if (fail > 1) {
-            for (TransactionRegister transactionRegister : transactionInstances) {
-                 clientApi.transactionRollBack(id);
-            }
-        }
-        // 提交事务
-        if (fail == 0 && success == transactionInstances.size()) {
-            for (TransactionRegister transactionRegister : transactionInstances) {
-                clientApi.transactionCommit(id);
-            }
-        }
-
-    }
 }

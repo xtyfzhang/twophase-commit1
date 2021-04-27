@@ -1,6 +1,7 @@
 package com.algorithm.twophasecommit.context;
 
 import com.algorithm.twophasecommit.api.ServiceApi;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -9,6 +10,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 @Component
+@Slf4j
 public class TransactionExecutor extends Thread{
 
     private final static String ERROR_KEY = "ERROR";
@@ -43,10 +45,12 @@ public class TransactionExecutor extends Thread{
             excute();
             // 执行成功，进行提交事务
             success = true;
+            log.info("事务执行成功");
           //  serviceApi.commit(transactionId);
         } catch (Throwable throwable) {
             // 执行失败，进行回滚事务
             success = false;
+            log.info("事务执行失败");
          //   throwable.printStackTrace();
         }
     }
