@@ -52,10 +52,10 @@ public class AsynTransactionExecute extends Thread{
             }
         }
         // 回滚事务
-        if (fail > 1) {
+        if (fail >= 1 || success < transactionInstances.size()) {
             for (TransactionRegister transactionRegister : transactionInstances) {
                 //log.info();
-                log.info("告知客户端事务执行失败，回滚事务");
+                log.info("通知客户端{}事务执行失败，回滚事务",transactionRegister.getAddr());
                ClientApi clientApi = FeignUtils.createFeignService(transactionRegister.getAddr());
                clientApi.transactionRollBack(traId);
             }
@@ -63,7 +63,7 @@ public class AsynTransactionExecute extends Thread{
         // 提交事务
         if (fail == 0 && success == transactionInstances.size()) {
             for (TransactionRegister transactionRegister : transactionInstances) {
-                log.info("告知客户端事务执行成功，提交事务");
+                log.info("通知知客户端{}事务执行成功，提交事务",transactionRegister.getAddr());
                 ClientApi clientApi = FeignUtils.createFeignService(transactionRegister.getAddr());
                 clientApi.transactionCommit(traId);
             }

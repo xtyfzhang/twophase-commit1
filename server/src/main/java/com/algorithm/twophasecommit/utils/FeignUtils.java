@@ -22,7 +22,8 @@ public class FeignUtils {
         return Feign.builder()
                 .encoder(new SpringEncoder(converter))
                 .decoder(new SpringDecoder(converter))
-                .contract(new SpringMvcContract())
+                //.contract(new SpringMvcContract())
+                .contract(new feign.Contract.Default())
                 .target(ClientApi.class, "http://"+serverAddr+"/");
     }
 

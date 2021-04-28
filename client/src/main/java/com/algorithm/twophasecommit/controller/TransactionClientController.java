@@ -1,6 +1,7 @@
 package com.algorithm.twophasecommit.controller;
 
 import com.algorithm.twophasecommit.context.TPCTransactioContextAware;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TransactionClientController {
 
+    @Autowired
     private TPCTransactioContextAware tpcTransactioContextAware;
     /**
      * 询问执行结果，-1 ：执行失败；1：执行成功

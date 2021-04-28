@@ -11,6 +11,6 @@ public class ExampleController {
     @RequestMapping("/test")
     @TwoTC
     public void test(){
-        throw new RuntimeException("测试事务执行");
+        throw new RuntimeException("==测试事务执行==");
     }
 }
