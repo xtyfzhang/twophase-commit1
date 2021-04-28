@@ -9,6 +9,8 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import java.util.concurrent.locks.LockSupport;
+
 @Component
 @Slf4j
 public class TransactionExecutor extends Thread{
@@ -36,6 +38,12 @@ public class TransactionExecutor extends Thread{
     // 事务状态
     private TransactionStatus transactionStatus;
 
+    private Thread lockThread;
+
+    public TransactionExecutor(){
+        lockThread = Thread.currentThread();
+    }
+
     @Override
     public void run() {
         DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
@@ -43,15 +51,21 @@ public class TransactionExecutor extends Thread{
         try {
             // 执行切面方法
             excute();
-            // 执行成功，进行提交事务
             success = true;
-            log.info("事务执行成功");
-          //  serviceApi.commit(transactionId);
+            LockSupport.park(Thread.currentThread());
+            if (operation == Operations.COMMIT) {
+                log.info("提交事务事务");
+                platformTransactionManager.commit(transactionStatus);
+            }
+            if (operation == Operations.ROLLBACK) {
+                log.info("回滚事务");
+                platformTransactionManager.rollback(transactionStatus);
+            }
         } catch (Throwable throwable) {
             // 执行失败，进行回滚事务
             success = false;
             log.info("事务执行失败");
-         //   throwable.printStackTrace();
+
         }
     }
 
@@ -77,5 +91,21 @@ public class TransactionExecutor extends Thread{
 
     public TransactionStatus getTransactionStatus() {
         return transactionStatus;
+    }
+
+    public Operations getOperation() {
+        return operation;
+    }
+
+    public void setOperation(Operations operation) {
+        this.operation = operation;
+    }
+
+    public Thread getLockThread() {
+        return lockThread;
+    }
+
+    public void setLockThread(Thread lockThread) {
+        this.lockThread = lockThread;
     }
 }

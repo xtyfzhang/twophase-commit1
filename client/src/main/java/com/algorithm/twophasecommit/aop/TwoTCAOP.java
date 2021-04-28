@@ -80,7 +80,7 @@ public class TwoTCAOP {
         //将设置到相关的信息
         tpcTransactioContextAware.setTransactionExecutor(transactionExecutor);
         // 阻塞当前线程，等待其它线程执行情况，执行事务完成后释放事务
-        LockSupport.park(Thread.currentThread());
+
         return transactionExecutor.getExcuteResult();
     }
 

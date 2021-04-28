@@ -45,6 +45,7 @@ public abstract class AbstractTransactionProcessing {
         if (!inActionTransaction()) {
             long transactionid  = snowflakeIdWorker.nextId();
             this.serviceNum = serviceNum;
+            // 执行询问程序
             return transactionid;
         }
         return -1L;

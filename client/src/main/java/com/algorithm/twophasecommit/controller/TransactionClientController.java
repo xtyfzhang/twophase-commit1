@@ -1,6 +1,7 @@
 package com.algorithm.twophasecommit.controller;
 
 import com.algorithm.twophasecommit.context.TPCTransactioContextAware;
+import com.algorithm.twophasecommit.context.TransactionExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -8,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.locks.LockSupport;
 
 @RestController
 public class TransactionClientController {
@@ -33,10 +36,12 @@ public class TransactionClientController {
     @PostMapping("/transactionCommit")
     void transactionCommit(@RequestParam  Long id){
         // 获取事务管理器
-        PlatformTransactionManager platformTransactionManager = tpcTransactioContextAware.getDefaultTransactionManager();
-        TransactionStatus transactionStatus = tpcTransactioContextAware.getTransactionExecutor().getTransactionStatus();
+      //  PlatformTransactionManager platformTransactionManager = tpcTransactioContextAware.getDefaultTransactionManager();
+        TransactionExecutor transactionExecutor = tpcTransactioContextAware.getTransactionExecutor();
         // 提交事务
-        platformTransactionManager.commit(transactionStatus);
+        transactionExecutor.setOperation(TransactionExecutor.Operations.COMMIT);
+        LockSupport.unpark(transactionExecutor);
+       // platformTransactionManager.commit(transactionStatus);
 
     }
 
@@ -47,10 +52,10 @@ public class TransactionClientController {
     @PostMapping("/transactionRollBack")
     void transactionRollBack(@RequestParam  Long id){
 
-        // 获取事务管理器
-        PlatformTransactionManager platformTransactionManager = tpcTransactioContextAware.getDefaultTransactionManager();
-        TransactionStatus transactionStatus = tpcTransactioContextAware.getTransactionExecutor().getTransactionStatus();
+      //  PlatformTransactionManager platformTransactionManager = tpcTransactioContextAware.getDefaultTransactionManager();
+        TransactionExecutor transactionExecutor = tpcTransactioContextAware.getTransactionExecutor();
         // 提交事务
-        platformTransactionManager.rollback(transactionStatus);
+        transactionExecutor.setOperation(TransactionExecutor.Operations.ROLLBACK);
+        LockSupport.unpark(transactionExecutor);
     }
 }
