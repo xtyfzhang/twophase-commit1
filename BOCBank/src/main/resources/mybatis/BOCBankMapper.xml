@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.algorithm.twophasecommit.mapper.BOCBankMapper" >
+
+    <update id="transferable">
+        update bobc_bank set ammout = ammout + #{ammout} where id = 1;
+    </update>
+
+    <update id="takeMoney">
+        update bobc_bank set ammout = #{ammout} where id = 1;
+    </update>
+    <update id="transferInto">
+        update bobc_bank set ammout = ammout + #{ammout} where id = 1;
+    </update>
+    <update id="transferOut">
+        update bobc_bank set ammout = ammout - #{ammout} where id = 1 and ammout >= #{ammout};
+    </update>
+</mapper>

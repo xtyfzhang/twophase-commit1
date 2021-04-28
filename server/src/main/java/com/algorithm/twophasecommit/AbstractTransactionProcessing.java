@@ -62,11 +62,11 @@ public abstract class AbstractTransactionProcessing {
         List<TransactionRegister> transactionRegisters = map.getOrDefault(id,new ArrayList<>());
         transactionRegisters.add(transactionRegister);
         map.put(id,transactionRegisters);
-        if (transactionRegisters.size() == serviceNum) {
+        //if (transactionRegisters.size() == serviceNum) {
             // 执行事务处理
             AsynTransactionExecute asynTransactionExecute = new AsynTransactionExecute(map,transactionInstance,id);
             asynTransactionExecute.start();
-        }
+        //}
     }
 
     /**

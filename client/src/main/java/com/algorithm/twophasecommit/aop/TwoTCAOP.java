@@ -68,6 +68,9 @@ public class TwoTCAOP {
         serviceApi.registerTransactionService(traId);
         // 保存事务ID信息
         tpcTransactioContextAware.setTransactioId(traId);
+        // 设置子线程共享主线程信息
+        ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        RequestContextHolder.setRequestAttributes(sra, true);
         TransactionExecutor transactionExecutor = new TransactionExecutor(){
             @Override
             public void excute() throws Throwable{

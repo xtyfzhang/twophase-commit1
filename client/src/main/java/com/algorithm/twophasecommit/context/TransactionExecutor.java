@@ -8,6 +8,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.concurrent.locks.LockSupport;
 
@@ -49,22 +51,26 @@ public class TransactionExecutor extends Thread{
         DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
         transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
         try {
+
             // 执行切面方法
             excute();
             success = true;
             LockSupport.park(Thread.currentThread());
             if (operation == Operations.COMMIT) {
-                log.info("提交事务事务");
+                log.warn("提交事务事务");
                 platformTransactionManager.commit(transactionStatus);
             }
             if (operation == Operations.ROLLBACK) {
-                log.info("回滚事务");
+                log.warn("回滚事务");
                 platformTransactionManager.rollback(transactionStatus);
             }
         } catch (Throwable throwable) {
             // 执行失败，进行回滚事务
             success = false;
-            log.info("事务执行失败");
+            platformTransactionManager.rollback(transactionStatus);
+            log.error("事务执行失败:{}",throwable.getMessage());
+            log.warn("回滚事务");
+            throwable.printStackTrace();
 
         }
     }

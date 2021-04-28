@@ -8,6 +8,8 @@
         <module>common</module>
         <module>client</module>
         <module>example</module>
+        <module>BOCBank</module>
+        <module>ABCBank</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
