@@ -41,6 +41,9 @@ public class AsynTransactionExecute extends Thread{
         int success = 0;
         int fail = 0;
         List<TransactionRegister> transactionInstances = map.get(traId);
+        if (transactionInstances == null) {
+            return ;
+        }
         for (TransactionRegister transactionRegister : transactionInstances) {
             ClientApi clientApi = FeignUtils.createFeignService(transactionRegister.getAddr());
             int askResult = clientApi.askResult(traId);
